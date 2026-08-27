@@ -286,7 +286,7 @@ function App() {
   const [adminToken, setAdminToken] = useState(() => localStorage.getItem("eb_admin_token") || "");
   const [admin, setAdmin] = useState(null);
   const [adminTab, setAdminTab] = useState("dashboard");
-  const [adminLogin, setAdminLogin] = useState({ email: "contact.ekabhumih@gmail.com", password: "admin123password" });
+  const [adminLogin, setAdminLogin] = useState({ email: "", password: "" });
   const [newCoupon, setNewCoupon] = useState({ code: "", discountPercent: 10, flatDiscount: 0, minOrderValue: 0, usageLimit: 500, startDate: "", expiryDate: "" });
   const [adminCoupons, setAdminCoupons] = useState([]);
 
@@ -1065,6 +1065,7 @@ function App() {
     localStorage.removeItem("eb_admin_token");
     setAdminToken("");
     setAdmin(null);
+    setAdminLogin({ email: "", password: "" });
     go("home");
     setToast("Logged out of Admin Panel");
   };
