@@ -3272,10 +3272,6 @@ img {
   gap: 12px;
 }
 
-.qty-control.small {
-  height: 38px;
-}
-
 /* RESPONSIVE FOR PRODUCT DETAILS */
 @media (max-width: 820px) {
   .pd-proof-strip {
