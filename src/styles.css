@@ -3248,9 +3248,20 @@ img {
   object-fit: cover;
 }
 
+.text-qty-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream-card);
+  border: 1px solid var(--cream-border);
+  padding: 4px 8px;
+  border-radius: 99px;
+  display: none;
+}
+
 .sticky-product-info strong {
   display: block;
-  font-size: 14px;
+  font-size: 10px;
 }
 
 .sticky-product-info span {
