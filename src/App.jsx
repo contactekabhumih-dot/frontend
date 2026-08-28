@@ -8,7 +8,9 @@ import {
   ShoppingBag,
   Mail,
   MapPin,
-  Phone
+  Phone,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -287,6 +289,7 @@ function App() {
   const [admin, setAdmin] = useState(null);
   const [adminTab, setAdminTab] = useState("dashboard");
   const [adminLogin, setAdminLogin] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [newCoupon, setNewCoupon] = useState({ code: "", discountPercent: 10, flatDiscount: 0, minOrderValue: 0, usageLimit: 500, startDate: "", expiryDate: "" });
   const [adminCoupons, setAdminCoupons] = useState([]);
 
@@ -654,7 +657,10 @@ function App() {
   };
 
   // Admin Auth Handlers
-  const adminHeaders = { Authorization: `Bearer ${adminToken}` };
+  const getAdminHeaders = () => {
+    const token = adminToken || localStorage.getItem("eb_admin_token") || "";
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
 
   const handleAdminError = (err) => {
     if (err.response?.status === 401) {
@@ -686,10 +692,11 @@ function App() {
   };
 
   const loadAdmin = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/dashboard`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/dashboard`, getAdminHeaders());
       setAdmin(prev => ({ ...(prev || {}), ...res.data }));
       setView("admin");
     } catch (err) {
@@ -700,10 +707,11 @@ function App() {
   };
 
   const loadOrders = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/orders`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/orders`, getAdminHeaders());
       setAdmin(prev => ({ ...(prev || {}), orders: res.data }));
     } catch (err) {
       if (!handleAdminError(err)) {
@@ -717,7 +725,7 @@ function App() {
   const updateOrderStatus = async (id, status, sendEmail) => {
     setLoading(true);
     try {
-      const res = await axios.patch(`${API}/admin/orders/${id}/status`, { status, sendEmail }, { headers: adminHeaders });
+      const res = await axios.patch(`${API}/admin/orders/${id}/status`, { status, sendEmail }, getAdminHeaders());
       const emailRes = res.data.emailResult;
       if (emailRes) {
         if (emailRes.emailSent) {
@@ -744,7 +752,7 @@ function App() {
   const resendOrderEmail = async (orderId) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/admin/orders/${orderId}/resend-email`, {}, { headers: adminHeaders });
+      const res = await axios.post(`${API}/admin/orders/${orderId}/resend-email`, {}, getAdminHeaders());
       const emailRes = res.data.emailResult;
       if (emailRes?.emailSent) {
         setToast("Resent order notification email accepted by provider!");
@@ -760,10 +768,11 @@ function App() {
   };
 
   const loadAdminCoupons = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/coupons`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/coupons`, getAdminHeaders());
       setAdminCoupons(res.data);
     } catch (err) {
       if (!handleAdminError(err)) setToast("Could not load coupons.");
@@ -777,7 +786,7 @@ function App() {
     if (!newCoupon.code) return;
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/admin/coupons`, newCoupon, { headers: adminHeaders });
+      const res = await axios.post(`${API}/admin/coupons`, newCoupon, getAdminHeaders());
       const createdCode = newCoupon.code;
       setNewCoupon({ code: "", discountPercent: 10, flatDiscount: 0, minOrderValue: 0, usageLimit: 500, startDate: "", expiryDate: "" });
       await loadAdminCoupons();
@@ -792,7 +801,7 @@ function App() {
   const deleteCoupon = async (code) => {
     setLoading(true);
     try {
-      await axios.delete(`${API}/admin/coupons/${code}`, { headers: adminHeaders });
+      await axios.delete(`${API}/admin/coupons/${code}`, getAdminHeaders());
       setToast(`Coupon ${code} deleted.`);
       await loadAdminCoupons();
     } catch (err) {
@@ -804,10 +813,11 @@ function App() {
 
   // Subscribers Management
   const loadSubscribers = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/subscribers`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/subscribers`, getAdminHeaders());
       setSubscribers(res.data);
     } catch (err) {
       if (!handleAdminError(err)) setToast("Could not load subscribers.");
@@ -820,7 +830,7 @@ function App() {
     setLoading(true);
     try {
       const newStatus = currentStatus === "Subscribed" ? "Unsubscribed" : "Subscribed";
-      await axios.patch(`${API}/admin/subscribers/${id}`, { status: newStatus }, { headers: adminHeaders });
+      await axios.patch(`${API}/admin/subscribers/${id}`, { status: newStatus }, getAdminHeaders());
       setToast(`Subscriber status changed to ${newStatus}`);
       await loadSubscribers();
     } catch (err) {
@@ -832,10 +842,11 @@ function App() {
 
   // Offers & Campaign Handlers
   const loadOffers = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/offers`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/offers`, getAdminHeaders());
       setOffers(res.data);
     } catch (err) {
       if (!handleAdminError(err)) setToast("Could not load offers.");
@@ -854,7 +865,7 @@ function App() {
     if (!offerConfirmModal) return;
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/admin/offers`, { ...offerConfirmModal, sendCampaign }, { headers: adminHeaders });
+      const res = await axios.post(`${API}/admin/offers`, { ...offerConfirmModal, sendCampaign }, getAdminHeaders());
       setToast(`Offer "${offerConfirmModal.title}" created.`);
       setNewOffer({ title: "", description: "", discount: "", couponCode: "", startDate: "", endDate: "", bannerUrl: "" });
       setOfferConfirmModal(null);
@@ -870,10 +881,11 @@ function App() {
   };
 
   const loadCampaigns = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/campaigns`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/campaigns`, getAdminHeaders());
       setCampaigns(res.data.campaigns || []);
       setEmailLogs(res.data.logs || []);
     } catch (err) {
@@ -886,7 +898,7 @@ function App() {
   const retryCampaignFailed = async (campaignId) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/admin/campaigns/${campaignId}/retry`, {}, { headers: adminHeaders });
+      const res = await axios.post(`${API}/admin/campaigns/${campaignId}/retry`, {}, getAdminHeaders());
       setToast(`Retried failed recipients: ${res.data.summary?.sent || 0} sent.`);
       await loadCampaigns();
     } catch (err) {
@@ -904,7 +916,7 @@ function App() {
         couponCode: couponConfirmModal.code,
         discountText: couponConfirmModal.discount,
         description: `Use code ${couponConfirmModal.code} during checkout for special savings.`
-      }, { headers: adminHeaders });
+      }, getAdminHeaders());
       setToast(`Coupon Campaign Result: ${res.data.summary?.message || "Processed"}`);
       setCouponConfirmModal(null);
       await loadCampaigns();
@@ -917,10 +929,11 @@ function App() {
 
   // Email Settings & Test Email
   const loadEmailSettings = async () => {
-    if (!adminToken) return go("admin-login");
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return go("admin-login");
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/admin/email/settings`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/email/settings`, getAdminHeaders());
       setEmailSettings(res.data);
     } catch (err) {
       if (!handleAdminError(err)) setToast("Could not load email settings.");
@@ -938,7 +951,7 @@ function App() {
     setLoading(true);
     setTestEmailResult(null);
     try {
-      const res = await axios.post(`${API}/admin/email/test`, { testEmail: testEmailInput }, { headers: adminHeaders });
+      const res = await axios.post(`${API}/admin/email/test`, { testEmail: testEmailInput }, getAdminHeaders());
       setTestEmailResult(res.data);
       if (res.data.emailSent) {
         setToast("Test email accepted by provider!");
@@ -947,9 +960,11 @@ function App() {
       }
       await loadEmailSettings();
     } catch (err) {
-      const errMsg = err.response?.data?.error || "Could not send test email";
-      setTestEmailResult({ success: false, error: errMsg, message: errMsg });
-      setToast(errMsg);
+      if (!handleAdminError(err)) {
+        const errMsg = err.response?.data?.error || "Could not send test email";
+        setTestEmailResult({ success: false, error: errMsg, message: errMsg });
+        setToast(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -999,10 +1014,12 @@ function App() {
 
   const fetchProductRevisions = async () => {
     try {
-      const res = await axios.get(`${API}/admin/product/revisions`, { headers: adminHeaders });
+      const res = await axios.get(`${API}/admin/product/revisions`, getAdminHeaders());
       setCmsRevisions(res.data);
-    } catch {
-      setCmsRevisions([]);
+    } catch (err) {
+      if (!handleAdminError(err)) {
+        setCmsRevisions([]);
+      }
     }
   };
 
@@ -1013,7 +1030,7 @@ function App() {
     }
     setCmsSaveStatus("saving");
     try {
-      const res = await axios.put(`${API}/admin/product`, cmsProduct, { headers: adminHeaders });
+      const res = await axios.put(`${API}/admin/product`, cmsProduct, getAdminHeaders());
       setProduct(res.data);
       setCmsProduct(JSON.parse(JSON.stringify(res.data)));
       setCmsDirty(false);
@@ -1022,7 +1039,9 @@ function App() {
       fetchProductRevisions();
     } catch (err) {
       setCmsSaveStatus("error");
-      setToast(err.response?.data?.error || "Could not save product");
+      if (!handleAdminError(err)) {
+        setToast(err.response?.data?.error || "Could not save product");
+      }
     }
   };
 
@@ -2346,13 +2365,36 @@ function App() {
               />
             </label>
             <label>Password
-              <input
-                type="password"
-                required
-                value={adminLogin.password}
-                onChange={e => setAdminLogin({ ...adminLogin, password: e.target.value })}
-                placeholder="••••••••"
-              />
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={adminLogin.password}
+                  onChange={e => setAdminLogin({ ...adminLogin, password: e.target.value })}
+                  placeholder="••••••••"
+                  style={{ paddingRight: "42px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--muted)",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "4px"
+                  }}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </label>
 
             <button className="button button-primary full" disabled={loading}>
