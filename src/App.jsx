@@ -22,9 +22,9 @@ const fallbackProduct = {
   shortDescription: "Powered by 3% Redensyl, Baicapil and AnaGain, designed for a simple scalp care routine.",
   description: "A clinically backed blend designed to reduce hair fall, strengthen roots and encourage new growth.",
   sku: "EB-RED-50G",
-  price: 419,
-  originalPrice: 599,
-  discountPercent: 30,
+  price: 1018,
+  originalPrice: 1499,
+  discountPercent: 32,
   netWeight: "50g",
   rating: 4.8,
   reviewsCount: 124,
@@ -66,6 +66,15 @@ function money(value) {
     currency: "INR",
     maximumFractionDigits: 0
   }).format(value || 0);
+}
+
+function calcDiscount(price, originalPrice) {
+  const p = Number(price || 0);
+  const orig = Number(originalPrice || 0);
+  if (orig > 0 && orig > p) {
+    return Math.round(((orig - p) / orig) * 100);
+  }
+  return 0;
 }
 
 const customerStories = [
@@ -1024,18 +1033,49 @@ function App() {
   };
 
   const saveCmsProduct = async () => {
-    if (!cmsProduct?.name || !cmsProduct?.price) {
+    if (!cmsProduct?.name || cmsProduct?.price === undefined || cmsProduct?.price === null) {
       setToast("Product Name and Price are required.");
       return;
     }
+
+    const p = Number(cmsProduct.price);
+    const orig = Number(cmsProduct.originalPrice || 0);
+
+    if (p < 0 || orig < 0) {
+      setToast("Price values cannot be negative.");
+      return;
+    }
+    if (orig > 0 && p > orig) {
+      setToast("Selling price cannot be higher than original price.");
+      return;
+    }
+
     setCmsSaveStatus("saving");
     try {
       const res = await axios.put(`${API}/admin/product`, cmsProduct, getAdminHeaders());
-      setProduct(res.data);
-      setCmsProduct(JSON.parse(JSON.stringify(res.data)));
+      const saved = res.data;
+
+      console.log("[PRODUCT SAVE]", {
+        productId: saved._id,
+        originalPrice: saved.originalPrice,
+        sellingPrice: saved.price || saved.sellingPrice,
+        apiStatus: "SUCCESS"
+      });
+
+      const verifyRes = await axios.get(`${API}/product`);
+      const verified = verifyRes.data;
+
+      console.log("[PRODUCT VERIFY]", {
+        fetchedOriginalPrice: verified.originalPrice,
+        fetchedSellingPrice: verified.price || verified.sellingPrice,
+        persistence: (verified.price === saved.price && verified.originalPrice === saved.originalPrice) ? "PASS" : "FAIL"
+      });
+
+      setProduct(verified);
+      setCmsProduct(JSON.parse(JSON.stringify(verified)));
       setCmsDirty(false);
       setCmsSaveStatus("saved");
-      setToast("Product saved successfully to database!");
+      setToast(`Product saved & verified! Selling: ${money(verified.price)}, Original: ${money(verified.originalPrice)}`);
       fetchProductRevisions();
     } catch (err) {
       setCmsSaveStatus("error");
@@ -1322,8 +1362,10 @@ function App() {
                   <p className="spotlight-desc">{product.shortDescription || product.description || product.subtitle}</p>
                   <div className="price-line">
                     <strong>{money(product.price)}</strong>
-                    <span>{money(product.originalPrice)}</span>
-                    <em>{product.discountPercent}% OFF</em>
+                    {product.originalPrice > product.price && <span>{money(product.originalPrice)}</span>}
+                    {calcDiscount(product.price, product.originalPrice) > 0 && (
+                      <em>{calcDiscount(product.price, product.originalPrice)}% OFF</em>
+                    )}
                   </div>
                   <div className="spotlight-action">
                     <button className="button button-primary" onClick={() => go("product")}>
@@ -1604,8 +1646,10 @@ function App() {
 
               <div className="price-line big">
                 <strong>{money(product.price)}</strong>
-                <span>{money(product.originalPrice)}</span>
-                <em>{product.discountPercent}% OFF</em>
+                {product.originalPrice > product.price && <span>{money(product.originalPrice)}</span>}
+                {calcDiscount(product.price, product.originalPrice) > 0 && (
+                  <em>{calcDiscount(product.price, product.originalPrice)}% OFF</em>
+                )}
               </div>
               <div className="net-weight">Net Wt. {product.netWeight}, Clinically validated formula</div>
 
@@ -3312,8 +3356,8 @@ function App() {
                   {product.originalPrice > product.price && (
                     <span className="sticky-orig-price">{money(product.originalPrice)}</span>
                   )}
-                  {product.discountPercent > 0 && (
-                    <span className="sticky-discount">{product.discountPercent}% OFF</span>
+                  {calcDiscount(product.price, product.originalPrice) > 0 && (
+                    <span className="sticky-discount">{calcDiscount(product.price, product.originalPrice)}% OFF</span>
                   )}
                 </div>
               </div>
