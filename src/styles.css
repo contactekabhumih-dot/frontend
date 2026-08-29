@@ -23,6 +23,10 @@ html, body {
   scroll-behavior: smooth;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: #FAF8F5;
@@ -38,6 +42,8 @@ body {
 
 img, svg, video, iframe {
   max-width: 100%;
+  height: auto;
+  box-sizing: border-box;
 }
 
 button, input, textarea, select {
@@ -50,7 +56,9 @@ button {
 
 img {
   max-width: 100%;
+  height: auto;
   display: block;
+  box-sizing: border-box;
 }
 
 .app {
@@ -402,12 +410,17 @@ img {
   gap: 32px;
   align-items: center;
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .results-copy {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
 .results-copy h2 {
@@ -441,6 +454,7 @@ img {
   padding: 6px 12px;
   border-radius: 99px;
   width: max-content;
+  max-width: 100%;
 }
 
 .results-image {
@@ -449,14 +463,18 @@ img {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
   aspect-ratio: 1 / 1;
   background: #F0EAE1;
-  height: 500px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: auto;
 }
 
 .results-image img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
   object-fit: cover;
+  display: block;
 }
 
 /* FORMULA TEXTURE BANNER */
@@ -465,6 +483,7 @@ img {
   margin: 0 auto;
   padding: 16px 20px 32px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .texture-card {
@@ -477,6 +496,10 @@ img {
   gap: 32px;
   align-items: center;
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .texture-image {
@@ -484,12 +507,17 @@ img {
   overflow: hidden;
   aspect-ratio: 16 / 9;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .texture-image img {
   width: 100%;
   height: 100%;
-  object-fit: none;
+  max-width: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .texture-copy {
@@ -1631,26 +1659,62 @@ img {
   /* RESULTS & TEXTURE BANNERS ON MOBILE */
   .results-showcase, .texture-banner {
     padding: 12px 16px 24px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .results-card, .texture-card {
     grid-template-columns: 1fr;
-    padding: 20px;
+    padding: 16px;
     border-radius: 20px;
-    gap: 20px;
+    gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .results-copy h2, .texture-copy h2 {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .results-image {
     order: -1;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
     aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .results-image img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .texture-image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
     aspect-ratio: 16 / 10;
+    border-radius: 14px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .texture-image img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* SIGNATURE SUB-FEATURES ROW ON MOBILE */
