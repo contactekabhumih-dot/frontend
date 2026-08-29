@@ -3213,13 +3213,16 @@ img {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid var(--cream-border);
-  padding: 12px 20px;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.1);
-  z-index: 900;
-  animation: slideUp 0.3s ease;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(44, 62, 46, 0.12);
+  padding: 8px 16px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+  z-index: 990;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-x: hidden;
 }
 
 @keyframes slideUp {
@@ -3233,54 +3236,259 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
 }
 
+/* Product Info Block */
 .sticky-product-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .sticky-thumb {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
   object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.text-qty-control {
+.sticky-text-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.sticky-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark, #2C3E2E);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+.sticky-price-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--cream-card);
-  border: 1px solid var(--cream-border);
-  padding: 4px 8px;
-  border-radius: 99px;
-  display: none;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
-.sticky-product-info strong {
-  display: block;
-  font-size: 10px;
-}
-
-.sticky-product-info span {
+.sticky-price {
   font-size: 13px;
-  color: var(--green);
   font-weight: 700;
+  color: var(--green, #2F6B38);
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.sticky-product-info small {
-  color: var(--muted);
+.sticky-orig-price {
+  font-size: 11px;
+  color: var(--muted, #768578);
   text-decoration: line-through;
-  font-weight: 400;
-  margin-left: 4px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
+.sticky-discount {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2F6B38;
+  background: #EEF5EB;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* Actions Block */
 .sticky-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Pill-shaped Quantity Control */
+.sticky-qty-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--cream-card, #FAF8F3);
+  border: 1px solid var(--cream-border, #E5E0D8);
+  border-radius: 99px;
+  padding: 2px 4px;
+  width: 84px;
+  height: 38px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.sticky-qty-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--dark, #2C3E2E);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.sticky-qty-btn:hover, .sticky-qty-btn:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.sticky-qty-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark, #2C3E2E);
+  min-width: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+/* Buttons */
+.sticky-btn-cart {
+  background: var(--green, #2F6B38);
+  color: #FFFFFF;
+  border: 1px solid var(--green, #2F6B38);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  height: 38px;
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(47, 107, 56, 0.2);
+}
+
+.sticky-btn-cart:hover, .sticky-btn-cart:active {
+  background: #23522a;
+}
+
+.sticky-btn-buy {
+  background: #FFFFFF;
+  color: var(--green, #2F6B38);
+  border: 1.5px solid var(--green, #2F6B38);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  height: 38px;
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.sticky-btn-buy:hover, .sticky-btn-buy:active {
+  background: #EEF5EB;
+}
+
+/* RESPONSIVE STYLING FOR MOBILE PHONES */
+@media (max-width: 520px) {
+  .sticky-add-bar {
+    padding: 6px 10px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  .sticky-bar-inner {
+    gap: 6px;
+  }
+
+  .sticky-product-info {
+    gap: 6px;
+  }
+
+  .sticky-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+  }
+
+  .sticky-title {
+    font-size: 11px;
+  }
+
+  .sticky-price {
+    font-size: 12px;
+  }
+
+  .sticky-orig-price {
+    font-size: 10px;
+  }
+
+  .sticky-actions {
+    gap: 5px;
+  }
+
+  .sticky-qty-control {
+    width: 74px;
+    height: 36px;
+    padding: 2px 2px;
+  }
+
+  .sticky-qty-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+  }
+
+  .sticky-qty-num {
+    font-size: 12px;
+  }
+
+  .sticky-btn-cart, .sticky-btn-buy {
+    height: 36px;
+    font-size: 11px;
+    padding: 0 8px;
+    border-radius: 6px;
+  }
+}
+
+/* EXTRA NARROW PHONES (320px - 360px) */
+@media (max-width: 360px) {
+  .sticky-discount {
+    display: none;
+  }
+
+  .sticky-btn-cart, .sticky-btn-buy {
+    padding: 0 6px;
+    font-size: 10.5px;
+  }
+
+  .sticky-qty-control {
+    width: 68px;
+  }
 }
 
 /* RESPONSIVE FOR PRODUCT DETAILS */

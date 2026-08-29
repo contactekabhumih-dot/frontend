@@ -3304,23 +3304,31 @@ function App() {
         <div className="sticky-add-bar">
           <div className="sticky-bar-inner">
             <div className="sticky-product-info">
-              <img src={product.images?.[0] || fallbackProduct.images[0]} alt="" className="sticky-thumb" />
-              <div>
-                <strong>{product.name}</strong>
-                <span>{money(product.price)} <small>MRP {money(product.originalPrice)}</small></span>
+              <img src={product.images?.[0] || fallbackProduct.images[0]} alt={product.name || "Product"} className="sticky-thumb" />
+              <div className="sticky-text-wrap">
+                <strong className="sticky-title">{product.name}</strong>
+                <div className="sticky-price-row">
+                  <span className="sticky-price">{money(product.price)}</span>
+                  {product.originalPrice > product.price && (
+                    <span className="sticky-orig-price">{money(product.originalPrice)}</span>
+                  )}
+                  {product.discountPercent > 0 && (
+                    <span className="sticky-discount">{product.discountPercent}% OFF</span>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="sticky-actions">
-              <div className="qty-control text-qty-control small">
-                <button type="button" className="qty-btn" onClick={() => setCartQty(q => Math.max(1, q - 1))}>-</button>
-                <span className="qty-num">{cartQty}</span>
-                <button type="button" className="qty-btn" onClick={() => setCartQty(q => Math.min(product.stock || 99, q + 1))}>+</button>
+              <div className="sticky-qty-control">
+                <button type="button" className="sticky-qty-btn" onClick={() => setCartQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
+                <span className="sticky-qty-num">{cartQty}</span>
+                <button type="button" className="sticky-qty-btn" onClick={() => setCartQty(q => Math.min(product.stock || 99, q + 1))} aria-label="Increase quantity">+</button>
               </div>
-              <button className="button button-primary" onClick={addToCart}>
+              <button type="button" className="sticky-btn-cart" onClick={addToCart}>
                 Add to Cart
               </button>
-              <button className="button button-light" onClick={() => { addToCart(); go("checkout"); }}>
+              <button type="button" className="sticky-btn-buy" onClick={() => { addToCart(); go("checkout"); }}>
                 Buy Now
               </button>
             </div>
