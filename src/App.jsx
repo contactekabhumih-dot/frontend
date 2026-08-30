@@ -3401,15 +3401,15 @@ function App() {
         </div>
 
         <div className="footer-main-grid">
-          <div className="footer-brand-col">
+          <div className="footer-brand-col footer-column">
             <img src="/logo.png" alt="Eka Bhūmih" className="footer-logo-img" />
-            <p className="footer-brand-desc">
+            <p className="footer-brand-desc footer-brand-description">
               Eka Bhūmih brings Redensyl led hair care into a calmer, cleaner routine with fewer steps, softer visuals, and ingredients that stay in focus.
             </p>
           </div>
 
-          <div className="footer-links-col">
-            <strong>Quick Navigation</strong>
+          <div className="footer-links-col footer-column">
+            <strong className="footer-heading">Quick Navigation</strong>
             <div className="footer-links">
               <button onClick={() => go("home")}>Home</button>
               <button onClick={() => go("product")}>Shop Collection</button>
@@ -3418,8 +3418,8 @@ function App() {
             </div>
           </div>
 
-          <div className="footer-links-col">
-            <strong>Store Policies</strong>
+          <div className="footer-links-col footer-column">
+            <strong className="footer-heading">Store Policies</strong>
             <div className="footer-links">
               <button onClick={() => go("terms")}>Terms and Conditions</button>
               <button onClick={() => go("privacy")}>Privacy Policy</button>
@@ -3429,13 +3429,13 @@ function App() {
             </div>
           </div>
 
-          <div className="footer-contact-col">
-            <strong>Contact and Support</strong>
+          <div className="footer-contact-col footer-column">
+            <strong className="footer-heading">Contact and Support</strong>
             <div className="footer-contact-info">
-              <span><Mail size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block' }} /> bhumihlifestyle@gmail.com</span>
-              <span><MapPin size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block' }} /> Kaloor, Kochi, Kerala</span>
-              <span><Phone size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block' }} /> +91 78290 33319</span>
-              <small className="contact-hours">Customer Support: Mon to Sat (9 AM to 6 PM)</small>
+              <span className="footer-contact-item"><Mail size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block', flexShrink: 0 }} /> bhumihlifestyle@gmail.com</span>
+              <span className="footer-contact-item"><MapPin size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block', flexShrink: 0 }} /> Kaloor, Kochi, Kerala</span>
+              <span className="footer-contact-item"><Phone size={15} style={{ marginRight: '8px', verticalAlign: 'middle', display: 'inline-block', flexShrink: 0 }} /> +91 78290 33319</span>
+              <small className="contact-hours">Customer Support: Mon to Sat, 10 AM to 6 PM</small>
             </div>
           </div>
         </div>
