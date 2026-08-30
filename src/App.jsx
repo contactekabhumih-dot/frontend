@@ -3402,10 +3402,16 @@ function App() {
 
         <div className="footer-main-grid">
           <div className="footer-brand-col footer-column">
-            <img src="/logo.png" alt="Eka Bhūmih" className="footer-logo-img" />
-            <p className="footer-brand-desc footer-brand-description">
-              Eka Bhūmih brings Redensyl led hair care into a calmer, cleaner routine with fewer steps, softer visuals, and ingredients that stay in focus.
-            </p>
+            <div className="footer-brand-row">
+              <img
+                src="/logo.png"
+                alt="Eka Bhūmih"
+                className="footer-logo"
+              />
+              <p className="footer-brand-description">
+                Eka Bhūmih brings Redensyl led hair care into a calmer, cleaner routine with fewer steps, softer visuals, and ingredients that stay in focus.
+              </p>
+            </div>
           </div>
 
           <div className="footer-links-col footer-column">
