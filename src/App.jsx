@@ -1347,10 +1347,10 @@ function App() {
               <p>
                 Explore Eka Bhūmih formulas created to support the scalp, strengthen strands, and make daily hair care feel more intentional.
               </p>
-              <div className="collection-badges">
-                <span>Redensyl based support</span>
-                <span>Gentle daily ritual</span>
-                <span>Minimal care with visible intent</span>
+              <div className="collection-badges feature-chips">
+                <span className="feature-chip">Redensyl based support</span>
+                <span className="feature-chip">Gentle daily ritual</span>
+                <span className="feature-chip">Minimal care with visible intent</span>
               </div>
             </div>
 
@@ -1394,11 +1394,11 @@ function App() {
                   Developed through advanced botanical science, Redensyl is the first cosmetic ingredient to target hair follicle stem cells, triggering a natural growth cycle for visibly fuller, stronger hair.
                 </p>
 
-                <div className="star-badges">
-                  <div className="badge-chip">Plant derived DHQG</div>
-                  <div className="badge-chip">Clinically Validated</div>
-                  <div className="badge-chip">Safe for All Hair Types</div>
-                  <div className="badge-chip">No Hormonal Side Effects</div>
+                <div className="star-badges feature-chips">
+                  <div className="badge-chip feature-chip">Plant derived DHQG</div>
+                  <div className="badge-chip feature-chip">Clinically Validated</div>
+                  <div className="badge-chip feature-chip">Safe for All Hair Types</div>
+                  <div className="badge-chip feature-chip">No Hormonal Side Effects</div>
                 </div>
 
                 <div className="star-actions">
@@ -1456,9 +1456,9 @@ function App() {
                 <p>
                   Clinically evaluated over 12 weeks. 89% of users experienced noticeable reduction in hair fall and visible improvement in scalp density from Month 0 to Month 3.
                 </p>
-                <div className="results-pills">
-                  <span>Month 0 to Month 3 Progress</span>
-                  <span>3% Redensyl + Baicapil + AnaGain</span>
+                <div className="results-pills feature-chips">
+                  <span className="feature-chip">Month 0 to Month 3 Progress</span>
+                  <span className="feature-chip">3% Redensyl + Baicapil + AnaGain</span>
                 </div>
                 <button className="button button-primary" onClick={() => go("product")}>
                   Start Your Routine
@@ -1638,9 +1638,9 @@ function App() {
                 {product.description || product.shortDescription}
               </p>
 
-              <div className="pd-badge-row">
+              <div className="pd-badge-row feature-chips">
                 {(product.benefits || []).slice(0, 4).map((b, i) => (
-                  <span key={i} className="pd-inline-pill">{b}</span>
+                  <span key={i} className="pd-inline-pill feature-chip">{b}</span>
                 ))}
               </div>
 
@@ -1871,9 +1871,9 @@ function App() {
                     {product.shortDescription || product.subtitle || "Powered by 3% Redensyl, Baicapil and AnaGain, designed for a simple scalp care routine."}
                   </p>
 
-                  <div className="cart-rich-ingredients">
+                  <div className="cart-rich-ingredients feature-chips">
                     {(product.keyIngredients || ["Redensyl 3%", "Baicapil 3%", "AnaGain 3%"]).map((ing, i) => (
-                      <span key={i} className="cart-ing-chip">{ing}</span>
+                      <span key={i} className="cart-ing-chip feature-chip">{ing}</span>
                     ))}
                   </div>
 
@@ -2735,9 +2735,9 @@ function App() {
                             <em>{cmsProduct.discountPercent}% OFF</em>
                           </div>
 
-                          <div className="cms-preview-pills">
+                          <div className="cms-preview-pills feature-chips">
                             {(cmsProduct.keyIngredients || []).map((ing, i) => (
-                              <span key={i} className="badge-chip">{ing}</span>
+                              <span key={i} className="badge-chip feature-chip">{ing}</span>
                             ))}
                           </div>
                         </div>

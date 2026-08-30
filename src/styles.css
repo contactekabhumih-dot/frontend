@@ -195,6 +195,35 @@ img {
   font-weight: 700;
 }
 
+/* FEATURE CHIPS & INGREDIENT PILLS RESPONSIVE LAYOUT */
+.feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.feature-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
+  background: var(--green-light);
+  color: var(--green-dark);
+  border: 1px solid var(--green);
+  border-radius: 99px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* HERO BANNER */
 .hero {
   background: linear-gradient(180deg, #FAF8F5 0%, #F5F1E9 100%);
@@ -845,15 +874,27 @@ img {
   gap: 8px;
   flex-wrap: wrap;
   margin: 4px 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ingredient-pills span {
+  display: inline-flex;
+  align-items: center;
   background: var(--green-light);
   color: var(--green);
   padding: 6px 12px;
   border-radius: 99px;
   font-size: 11px;
   font-weight: 600;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 .price-line {
@@ -1924,15 +1965,27 @@ img {
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 6px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .collection-badges span {
+  display: inline-flex;
+  align-items: center;
   background: var(--green-light);
   color: var(--green);
-  font-size: 11px;
-  font-weight: 600;
   padding: 6px 14px;
   border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 /* STAR INGREDIENT: REDENSYL */
@@ -1952,12 +2005,20 @@ img {
   grid-template-columns: 1.2fr 0.8fr;
   gap: 36px;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .star-copy {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .star-copy h2 {
@@ -1985,9 +2046,15 @@ img {
   flex-wrap: wrap;
   gap: 8px;
   margin: 6px 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .badge-chip {
+  display: inline-flex;
+  align-items: center;
   background: var(--white);
   border: 1px solid var(--cream-border);
   border-radius: 99px;
@@ -1995,6 +2062,12 @@ img {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink);
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 .star-actions {
@@ -2943,15 +3016,27 @@ img {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .pd-inline-pill {
+  display: inline-flex;
+  align-items: center;
   background: var(--green-light);
   color: var(--green);
   font-size: 11px;
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 99px;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 /* PROOF STRIP (01, 02, 03) */
@@ -4086,6 +4171,10 @@ img {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .cms-form-column {
@@ -4308,9 +4397,15 @@ img {
   flex-wrap: wrap;
   gap: 8px;
   margin: 4px 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .cart-ing-chip {
+  display: inline-flex;
+  align-items: center;
   background: var(--green-light);
   color: var(--green-dark);
   border: 1px solid var(--green);
@@ -4318,6 +4413,12 @@ img {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 99px;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 .cart-rich-controls-row {
@@ -4399,4 +4500,38 @@ img {
   padding: 2px 8px;
   border-radius: 99px;
   display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .feature-chips,
+  .star-badges,
+  .pd-badge-row,
+  .cart-rich-ingredients,
+  .ingredient-pills,
+  .collection-badges,
+  .cms-preview-pills {
+    gap: 7px;
+  }
+
+  .feature-chip,
+  .badge-chip,
+  .pd-inline-pill,
+  .cart-ing-chip,
+  .ingredient-pills span,
+  .collection-badges span {
+    padding: 7px 11px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 420px) {
+  .feature-chip,
+  .badge-chip,
+  .pd-inline-pill,
+  .cart-ing-chip,
+  .ingredient-pills span,
+  .collection-badges span {
+    max-width: 100%;
+  }
 }
