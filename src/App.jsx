@@ -276,6 +276,35 @@ function App() {
     }
   });
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
+  const [profileTab, setProfileTab] = useState("orders"); // "orders" | "profile"
+  const [userOrders, setUserOrders] = useState([]);
+  const [loadingUserOrders, setLoadingUserOrders] = useState(false);
+
+  const fetchUserOrders = async (email) => {
+    if (!email) return;
+    setLoadingUserOrders(true);
+    try {
+      const res = await axios.get(`${API}/orders/my-orders?email=${encodeURIComponent(email)}`);
+      if (Array.isArray(res.data)) {
+        setUserOrders(res.data);
+      }
+    } catch (err) {
+      console.warn("Could not fetch user orders:", err.message);
+    } finally {
+      setLoadingUserOrders(false);
+    }
+  };
+
+  useEffect(() => {
+    if (googleUser?.email) {
+      setCustomer(prev => ({
+        ...prev,
+        name: prev.name || googleUser.name || "",
+        email: prev.email || googleUser.email || ""
+      }));
+      fetchUserOrders(googleUser.email);
+    }
+  }, [googleUser]);
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -542,6 +571,11 @@ function App() {
   // Place Order
   const placeOrder = async (e) => {
     e.preventDefault();
+    if (!googleUser) {
+      setToast("Please sign in with your Google Account before completing your purchase.");
+      setGoogleModalOpen(true);
+      return;
+    }
     if (!customer.name || !customer.phone || !customer.email || !customer.address || !customer.city || !customer.pincode) {
       setToast("Please complete all shipping & email details.");
       return;
@@ -1155,48 +1189,111 @@ function App() {
         </div>
       )}
 
-      {/* GOOGLE ACCOUNT AUTH & PROFILE MODAL */}
+      {/* GOOGLE ACCOUNT AUTH & PROFILE MODAL WITH MY ORDERS */}
       {googleModalOpen && (
         <div className="modal-overlay" onClick={() => setGoogleModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button type="button" className="text-button modal-close-text" onClick={() => setGoogleModalOpen(false)}>Close</button>
             {googleUser ? (
               <div className="google-user-profile-view">
-                <div className="google-user-head">
-                  {!imgError && googleUser.picture ? (
-                    <img
-                      src={googleUser.picture}
-                      alt={googleUser.name}
-                      referrerPolicy="no-referrer"
-                      onError={() => setImgError(true)}
-                      className="google-profile-large-img"
-                    />
-                  ) : (
-                    <div className="google-avatar-fallback">
-                      {googleUser.name ? googleUser.name.charAt(0).toUpperCase() : "U"}
-                    </div>
-                  )}
-                  <div>
-                    <h2>{googleUser.name}</h2>
-                    <p>{googleUser.email}</p>
-                    <span className="logged-in-tag">Signed in with Google Account</span>
-                  </div>
+                <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--cream-border)", paddingBottom: "12px", marginBottom: "16px" }}>
+                  <button
+                    type="button"
+                    className={`button ${profileTab === "orders" ? "button-primary" : "button-light"}`}
+                    onClick={() => { setProfileTab("orders"); if (googleUser.email) fetchUserOrders(googleUser.email); }}
+                    style={{ padding: "8px 14px", fontSize: "12px" }}
+                  >
+                    My Orders ({userOrders.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`button ${profileTab === "profile" ? "button-primary" : "button-light"}`}
+                    onClick={() => setProfileTab("profile")}
+                    style={{ padding: "8px 14px", fontSize: "12px" }}
+                  >
+                    Account Info
+                  </button>
                 </div>
 
-                <div className="google-user-actions" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-                  <button className="button button-primary full" onClick={() => { setGoogleModalOpen(false); go("checkout"); }}>
-                    Proceed to Checkout
-                  </button>
-                  <button className="button button-light full" onClick={() => { handleGoogleLogout(); setGoogleModalOpen(false); }}>
-                    Sign Out of Google Account
-                  </button>
-                </div>
+                {profileTab === "orders" ? (
+                  <div className="user-my-orders-view" style={{ maxHeight: "420px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "4px" }}>
+                    {loadingUserOrders ? (
+                      <div style={{ textAlign: "center", padding: "20px", color: "var(--muted)", fontSize: "13px" }}>Loading your orders...</div>
+                    ) : userOrders.length > 0 ? (
+                      userOrders.map(usrOrd => (
+                        <div key={usrOrd._id} className="user-order-card" style={{ background: "var(--cream-card)", border: "1px solid var(--cream-border)", borderRadius: "14px", padding: "14px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                            <div>
+                              <strong style={{ fontSize: "14px", color: "var(--ink)" }}>{usrOrd.orderId}</strong>
+                              <small style={{ display: "block", color: "var(--muted)", fontSize: "10px" }}>
+                                {new Date(usrOrd.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </small>
+                            </div>
+                            <span className={`status ${String(usrOrd.status).toLowerCase()}`}>{usrOrd.status}</span>
+                          </div>
+
+                          <div style={{ fontSize: "12px", borderTop: "1px solid var(--cream-border)", paddingTop: "8px", marginTop: "8px" }}>
+                            {(usrOrd.items || []).map((itm, i) => (
+                              <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                                <span>{itm.name} × {itm.quantity}</span>
+                                <strong>{money((itm.price || 0) * (itm.quantity || 1))}</strong>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px", paddingTop: "8px", borderTop: "1px dashed var(--cream-border)", fontSize: "12px" }}>
+                            <span>Total: <strong style={{ color: "var(--green-dark)" }}>{money(usrOrd.totalAmount)}</strong> ({usrOrd.paymentMethod || "Razorpay"})</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ textAlign: "center", padding: "24px 12px", color: "var(--muted)", fontSize: "13px" }}>
+                        <p style={{ margin: "0 0 12px" }}>No orders placed yet for <strong>{googleUser.email}</strong>.</p>
+                        <button className="button button-primary" style={{ fontSize: "12px" }} onClick={() => { setGoogleModalOpen(false); go("product"); }}>
+                          Start Shopping
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="google-user-head">
+                      {!imgError && googleUser.picture ? (
+                        <img
+                          src={googleUser.picture}
+                          alt={googleUser.name}
+                          referrerPolicy="no-referrer"
+                          onError={() => setImgError(true)}
+                          className="google-profile-large-img"
+                        />
+                      ) : (
+                        <div className="google-avatar-fallback">
+                          {googleUser.name ? googleUser.name.charAt(0).toUpperCase() : "U"}
+                        </div>
+                      )}
+                      <div>
+                        <h2>{googleUser.name}</h2>
+                        <p>{googleUser.email}</p>
+                        <span className="logged-in-tag">Signed in with Google Account</span>
+                      </div>
+                    </div>
+
+                    <div className="google-user-actions" style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
+                      <button className="button button-primary full" onClick={() => { setGoogleModalOpen(false); go("checkout"); }}>
+                        Proceed to Checkout
+                      </button>
+                      <button className="button button-light full" onClick={() => { handleGoogleLogout(); setGoogleModalOpen(false); }}>
+                        Sign Out of Google Account
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
                 <div className="google-auth-header">
                   <h2>Sign In with Google</h2>
-                  <p>Fast, secure 1-click Google Account sign in and instant checkout.</p>
+                  <p>Fast, secure 1-click Google Account sign in to track orders and complete purchase.</p>
                 </div>
                 <div className="google-btn-container">
                   <button className="button button-primary full google-continue-btn" onClick={triggerGooglePrompt} disabled={loading}>
@@ -1355,8 +1452,8 @@ function App() {
             </div>
 
             <div className="collection-card">
-              <div className="spotlight-card">
-                <div className="spotlight-header">
+              <div className="spotlight-card featured-product">
+                <div className="spotlight-header featured-product-content">
                   <span className="eyebrow">FEATURED PRODUCT</span>
                   <h2>{product.name}</h2>
                   <p className="spotlight-desc">{product.shortDescription || product.description || product.subtitle}</p>
@@ -1367,6 +1464,11 @@ function App() {
                       <em>{calcDiscount(product.price, product.originalPrice)}% OFF</em>
                     )}
                   </div>
+                  <div className="featured-product-benefits feature-chips">
+                    <span className="feature-chip">3% Redensyl</span>
+                    <span className="feature-chip">Baicapil 3%</span>
+                    <span className="feature-chip">AnaGain 3%</span>
+                  </div>
                   <div className="spotlight-action">
                     <button className="button button-primary" onClick={() => go("product")}>
                       Shop Now
@@ -1374,8 +1476,8 @@ function App() {
                   </div>
                 </div>
 
-                <div className="spotlight-image">
-                  <img src={product.images?.[1] || fallbackProduct.images[1]} alt={product.name} />
+                <div className="spotlight-image featured-product-image-container">
+                  <img className="featured-product-image" src={product.images?.[1] || fallbackProduct.images[1]} alt={product.name} />
                 </div>
               </div>
             </div>
@@ -1448,24 +1550,24 @@ function App() {
           </section>
 
           {/* CLINICAL SCALP TRANSFORMATION SHOWCASE */}
-          <section className="results-showcase">
-            <div className="results-card">
-              <div className="results-copy">
+          <section className="results-showcase clinical-results-section">
+            <div className="results-card clinical-results">
+              <div className="results-copy clinical-results-content">
                 <span className="eyebrow">CLINICAL DENSITY RESULTS</span>
                 <h2>Real Scalp Transformation in 90 Days</h2>
                 <p>
                   Clinically evaluated over 12 weeks. 89% of users experienced noticeable reduction in hair fall and visible improvement in scalp density from Month 0 to Month 3.
                 </p>
-                <div className="results-pills feature-chips">
-                  <span className="feature-chip">Month 0 to Month 3 Progress</span>
-                  <span className="feature-chip">3% Redensyl + Baicapil + AnaGain</span>
+                <div className="results-pills clinical-result-pills feature-chips">
+                  <span className="feature-chip clinical-result-pill">Month 0 to Month 3 Progress</span>
+                  <span className="feature-chip clinical-result-pill">3% Redensyl + Baicapil + AnaGain</span>
                 </div>
-                <button className="button button-primary" onClick={() => go("product")}>
+                <button className="button button-primary cta" onClick={() => go("product")}>
                   Start Your Routine
                 </button>
               </div>
-              <div className="results-image">
-                <img src="/results.jpg" alt="Clinical scalp density improvement Month 0 vs Month 3" />
+              <div className="results-image clinical-results-image-container">
+                <img className="clinical-results-image" src="/results.jpg" alt="Clinical scalp density improvement Month 0 vs Month 3" />
               </div>
             </div>
           </section>
@@ -1921,7 +2023,19 @@ function App() {
               )}
               <div><span>Shipping</span><span className="muted">Free Shipping</span></div>
               <div className="total"><span>Total</span><strong>{money(finalTotal)}</strong></div>
-              <button className="button button-primary full" onClick={() => go("checkout")}>Proceed to Checkout</button>
+              <button
+                className="button button-primary full"
+                onClick={() => {
+                  if (!googleUser) {
+                    setToast("Please sign in with your Google Account before purchasing.");
+                    setGoogleModalOpen(true);
+                  } else {
+                    go("checkout");
+                  }
+                }}
+              >
+                Proceed to Checkout
+              </button>
             </div>
           </div>
         </main>

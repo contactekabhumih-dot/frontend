@@ -429,6 +429,7 @@ img {
   width: 100%;
 }
 
+.clinical-results,
 .results-card {
   background: var(--white);
   border: 1px solid var(--cream-border);
@@ -445,6 +446,7 @@ img {
   max-width: 100%;
 }
 
+.clinical-results-content,
 .results-copy {
   display: flex;
   flex-direction: column;
@@ -468,24 +470,27 @@ img {
   margin: 0;
 }
 
+.clinical-result-pills,
 .results-pills {
-  flex-direction: column;
-  gap: 6px;
-  margin: 6px 3px;
-  padding: 4px;
-}
-
-.results-pills span {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--green);
-  background: var(--green-light);
-  padding: 6px 12px;
-  border-radius: 99px;
-  width: max-content;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
+.clinical-result-pill {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.clinical-results-image-container,
 .results-image {
   border-radius: 18px;
   overflow: hidden;
@@ -498,12 +503,101 @@ img {
   margin: auto;
 }
 
+.clinical-results-image,
 .results-image img {
   width: 100%;
   height: 100%;
   max-width: 100%;
   object-fit: cover;
   display: block;
+}
+
+@media (min-width: 769px) {
+  .clinical-results,
+  .results-card {
+    display: grid;
+    grid-template-columns: 1fr 0.9fr;
+    gap: 32px;
+    align-items: stretch;
+    padding: 36px;
+    border-radius: 24px;
+  }
+
+  .clinical-results-content,
+  .results-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 10px;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .clinical-results-content h2,
+  .results-copy h2 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.15;
+  }
+
+  .clinical-results-content p,
+  .results-copy p {
+    margin: 0;
+    max-width: 650px;
+    line-height: 1.65;
+  }
+
+  .clinical-result-pills,
+  .results-pills {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 4px;
+    margin-bottom: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .clinical-result-pill {
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .clinical-results-content .cta,
+  .results-copy .button {
+    width: fit-content;
+    min-width: 180px;
+    margin-top: 12px;
+  }
+
+  .clinical-results-image-container,
+  .results-image {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    aspect-ratio: unset;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    background: #F0EAE1;
+    margin: 0;
+  }
+
+  .clinical-results-image,
+  .results-image img {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    border-radius: 20px;
+    display: block;
+  }
 }
 
 /* FORMULA TEXTURE BANNER */
@@ -580,20 +674,25 @@ img {
   gap: 20px;
 }
 
+.featured-product,
 .spotlight-card {
   background: var(--cream-card);
   border: 1px solid var(--cream-border);
   border-radius: 24px;
-  padding: 32px;
+  padding: 36px;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr 0.9fr;
   gap: 32px;
-  align-items: center;
+  align-items: stretch;
+  min-height: 0;
 }
 
+.featured-product-content,
 .spotlight-header {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  padding: 20px 10px;
   gap: 14px;
 }
 
@@ -613,22 +712,33 @@ img {
   margin: 0;
 }
 
-.spotlight-action {
-  margin-top: 6px;
+.featured-product-benefits {
+  margin: 2px 0 6px;
 }
 
+.spotlight-action {
+  margin-top: 4px;
+}
+
+.featured-product-image-container,
 .spotlight-image {
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
-  aspect-ratio: 4 / 3;
   background: #EAE2D4;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
 }
 
+.featured-product-image,
 .spotlight-image img {
   width: 100%;
   height: 100%;
+  min-height: 360px;
   object-fit: cover;
+  border-radius: 20px;
+  display: block;
 }
 
 /* SIGNATURE SUB-FEATURES HORIZONTAL ROW */
@@ -1677,11 +1787,21 @@ img {
     gap: 16px;
   }
 
+  .featured-product,
   .spotlight-card {
     grid-template-columns: 1fr;
     padding: 20px;
     border-radius: 20px;
     gap: 20px;
+    align-items: initial;
+    min-height: 0;
+  }
+
+  .featured-product-content,
+  .spotlight-header {
+    padding: 0;
+    justify-content: flex-start;
+    gap: 12px;
   }
 
   .spotlight-header h2 {
@@ -1692,9 +1812,20 @@ img {
     font-size: 13px;
   }
 
+  .featured-product-image-container,
   .spotlight-image {
     order: -1;
     aspect-ratio: 4 / 3;
+    min-height: 0;
+    height: auto;
+    border-radius: 14px;
+  }
+
+  .featured-product-image,
+  .spotlight-image img {
+    min-height: 0;
+    height: 100%;
+    border-radius: 14px;
   }
 
   /* RESULTS & TEXTURE BANNERS ON MOBILE */
@@ -1706,7 +1837,9 @@ img {
     overflow: hidden;
   }
 
-  .results-card, .texture-card {
+  .clinical-results,
+  .results-card,
+  .texture-card {
     grid-template-columns: 1fr;
     padding: 16px;
     border-radius: 20px;
@@ -1715,21 +1848,64 @@ img {
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
+    align-items: initial;
+    min-height: 0;
+  }
+
+  .clinical-results-content,
+  .results-copy {
+    padding: 0;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .clinical-result-pills,
+  .results-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 4px 0;
+  }
+
+  .clinical-result-pill {
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .clinical-results-content .cta,
+  .results-copy .button {
+    width: 100%;
   }
 
   .results-copy h2, .texture-copy h2 {
     font-size: 22px;
   }
 
+  .clinical-results-image-container,
   .results-image {
     order: -1;
     width: 100%;
     max-width: 100%;
     height: auto;
+    min-height: 0;
     aspect-ratio: 4 / 3;
     border-radius: 14px;
     overflow: hidden;
     box-sizing: border-box;
+  }
+
+  .clinical-results-image,
+  .results-image img {
+    min-height: 0;
+    height: 100%;
+    border-radius: 14px;
   }
 
   .results-image img {
@@ -4708,5 +4884,194 @@ img {
   .ingredient-pills span,
   .collection-badges span {
     max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   ADMIN DASHBOARD MOBILE RESPONSIVENESS & TOUCH ADAPTATIONS
+   ========================================================================== */
+@media (max-width: 980px) {
+  .admin-shell {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+
+  .admin-sidebar {
+    width: 100% !important;
+    padding: 16px 20px !important;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--cream-border);
+  }
+
+  .admin-brand {
+    padding: 0 0 12px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 12px;
+  }
+
+  .admin-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    gap: 8px !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .admin-nav button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+  }
+
+  .admin-logout {
+    margin-top: 10px !important;
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    background: rgba(211, 47, 47, 0.15) !important;
+    color: #FF6B6B !important;
+  }
+
+  .admin-content {
+    padding: 20px 16px !important;
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .admin-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-top h1 {
+    font-size: 26px !important;
+  }
+
+  .order-detail-card, .order-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    padding: 16px !important;
+  }
+
+  .order-info-block {
+    width: 100% !important;
+  }
+
+  .order-actions-block {
+    align-items: stretch !important;
+    width: 100% !important;
+    border-top: 1px solid var(--cream-border);
+    padding-top: 14px;
+    gap: 10px !important;
+  }
+
+  .order-price-box {
+    justify-content: space-between !important;
+  }
+
+  .order-status-select-wrap {
+    width: 100% !important;
+  }
+
+  .order-status-select-wrap select {
+    width: 100% !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .notify-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .three-col, .coupons-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .panel-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .panel-head button {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 8px 12px !important;
+    background: var(--cream) !important;
+    border-radius: 8px !important;
+  }
+
+  .cms-sticky-bar {
+    position: static !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  .cms-bar-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .cms-bar-actions button {
+    flex: 1 !important;
+  }
+
+  .cms-section-card {
+    padding: 16px !important;
+  }
+
+  .repeatable-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .user-my-orders-view {
+    max-height: 380px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-stats {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .admin-stats > div {
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .admin-stats span {
+    font-size: 8px !important;
+  }
+
+  .admin-stats strong {
+    font-size: 20px !important;
+    margin-top: 4px !important;
+  }
+
+  .create-coupon-form {
+    padding: 14px !important;
   }
 }
