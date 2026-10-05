@@ -991,18 +991,23 @@ function App() {
   };
 
   const resendOrderEmail = async (orderId) => {
+    const cleanId = String(orderId || "").trim().replace(/^#/, "");
+    if (!cleanId) return;
+
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/admin/orders/${orderId}/resend-email`, {}, getAdminHeaders());
+      const res = await axios.post(`${API}/admin/orders/${encodeURIComponent(cleanId)}/resend-email`, {}, getAdminHeaders());
       const emailRes = res.data.emailResult;
       if (emailRes?.emailSent) {
         setToast("Resent order notification email accepted by provider!");
+      } else if (emailRes?.status === "Not_Configured") {
+        setToast(`Email notice: ${emailRes?.message || "Email service is not configured"}`);
       } else {
-        setToast(`Email resend notice: ${emailRes?.message || emailRes?.error || "Failed"}`);
+        setToast(`Email resend notice: ${emailRes?.message || emailRes?.error || res.data?.message || "Could not resend email"}`);
       }
       await loadOrders();
     } catch (err) {
-      if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not resend email");
+      if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not resend email notification");
     } finally {
       setLoading(false);
     }
@@ -2952,7 +2957,8 @@ function App() {
                 <div className="orders-list">
                   {(admin?.orders || []).map(item => {
                     const targetId = item._id || item.id || item.orderId;
-                    const hasEmail = Boolean(item.customer?.email);
+                    const customerEmail = item.customer?.email || item.customerEmail || item.email || "";
+                    const hasEmail = Boolean(customerEmail && customerEmail.includes("@"));
                     const sendEmailChecked = sendEmailCheckedMap[targetId] !== false;
 
                     return (
@@ -2964,7 +2970,7 @@ function App() {
                           </div>
                           <span>Customer: <strong>{item.customer?.name}</strong> | Phone: {item.customer?.phone}</span>
                           {hasEmail ? (
-                            <span style={{ color: "var(--green-dark)" }}>Email: {item.customer?.email}</span>
+                            <span style={{ color: "var(--green-dark)" }}>Email: {customerEmail}</span>
                           ) : (
                             <span style={{ color: "#d32f2f", fontStyle: "italic" }}>Customer email unavailable</span>
                           )}
