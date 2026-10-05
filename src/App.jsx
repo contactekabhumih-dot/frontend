@@ -254,7 +254,21 @@ function App() {
   const [view, setView] = useState(() => getViewFromPath());
   const [imgError, setImgError] = useState(false);
   const [product, setProduct] = useState(fallbackProduct);
-  const [cartQty, setCartQty] = useState(1);
+  const [cartQty, setCartQty] = useState(() => {
+    try {
+      const q = Number(localStorage.getItem("eb_cart_qty"));
+      return q > 0 ? q : 1;
+    } catch {
+      return 1;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("eb_cart_qty", String(cartQty));
+    } catch (e) {}
+  }, [cartQty]);
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedStory, setSelectedStory] = useState(0);
   const [selectedArticle, setSelectedArticle] = useState(blogArticles[0]);
@@ -275,6 +289,17 @@ function App() {
       return null;
     }
   });
+
+  useEffect(() => {
+    try {
+      if (googleUser) {
+        localStorage.setItem("eb_google_user", JSON.stringify(googleUser));
+      } else {
+        localStorage.removeItem("eb_google_user");
+      }
+    } catch (e) {}
+  }, [googleUser]);
+
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [profileTab, setProfileTab] = useState("orders"); // "orders" | "profile"
   const [userOrders, setUserOrders] = useState(() => {
@@ -286,35 +311,50 @@ function App() {
   });
   const [loadingUserOrders, setLoadingUserOrders] = useState(false);
 
-  const fetchUserOrders = async (email) => {
-    if (!email) return;
-    const cleanEmail = String(email).trim().toLowerCase();
+  const fetchUserOrders = async (emailInput) => {
+    const targetEmail = String(emailInput || customer.email || googleUser?.email || "").trim().toLowerCase();
     
-    // Load local cache immediately so data is never lost on re-render
+    // Always load local cache first so newly placed orders are never lost
     try {
       const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
-      const userCached = cached.filter(o => String(o.customer?.email || "").trim().toLowerCase() === cleanEmail);
-      if (userCached.length > 0) {
-        setUserOrders(userCached);
+      const filtered = cached.filter(o => {
+        if (!targetEmail) return true;
+        const oEm = String(o.customer?.email || "").trim().toLowerCase();
+        return oEm === targetEmail || (googleUser?.email && oEm === String(googleUser.email).trim().toLowerCase()) || (customer?.email && oEm === String(customer.email).trim().toLowerCase());
+      });
+      if (filtered.length > 0) {
+        setUserOrders(filtered);
       }
     } catch (err) {
       console.warn("Local orders cache parse error:", err.message);
     }
 
+    if (!targetEmail) return;
+
     setLoadingUserOrders(true);
     try {
-      const res = await axios.get(`${API}/orders/my-orders?email=${encodeURIComponent(cleanEmail)}`);
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        setUserOrders(res.data);
-        // Merge with local cache
-        const currentCached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
-        const merged = [...res.data];
-        currentCached.forEach(c => {
-          if (!merged.some(m => String(m.orderId) === String(c.orderId) || String(m._id) === String(c._id))) {
-            merged.push(c);
+      const res = await axios.get(`${API}/orders/my-orders?email=${encodeURIComponent(targetEmail)}`);
+      if (Array.isArray(res.data)) {
+        const localCached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+        const combined = [...res.data];
+        localCached.forEach(loc => {
+          const locEm = String(loc.customer?.email || "").trim().toLowerCase();
+          if ((locEm === targetEmail || locEm === String(googleUser?.email || "").trim().toLowerCase()) &&
+              !combined.some(s => String(s.orderId) === String(loc.orderId) || String(s._id) === String(loc._id))) {
+            combined.push(loc);
           }
         });
-        localStorage.setItem("eb_user_orders", JSON.stringify(merged));
+        setUserOrders(combined);
+        try {
+          const otherUsersCached = localCached.filter(c => {
+            const cEm = String(c.customer?.email || "").trim().toLowerCase();
+            return cEm !== targetEmail && cEm !== String(googleUser?.email || "").trim().toLowerCase();
+          });
+          const updatedCache = [...combined, ...otherUsersCached];
+          localStorage.setItem("eb_user_orders", JSON.stringify(updatedCache));
+        } catch (e) {
+          console.warn("Error updating user orders cache:", e.message);
+        }
       }
     } catch (err) {
       console.warn("Could not fetch user orders from backend:", err.message);
@@ -334,16 +374,54 @@ function App() {
     }
   }, [googleUser]);
 
-  const [customer, setCustomer] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    city: "",
-    pincode: ""
+  const [customer, setCustomer] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("eb_customer"));
+      if (saved && typeof saved === "object") return saved;
+    } catch {}
+    return { name: "", phone: "", email: "", address: "", city: "", pincode: "" };
   });
-  const [order, setOrder] = useState(null);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("eb_customer", JSON.stringify(customer));
+    } catch (e) {}
+  }, [customer]);
+
+  const [order, setOrder] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("eb_last_order")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (order) {
+        localStorage.setItem("eb_last_order", JSON.stringify(order));
+      }
+    } catch (e) {}
+  }, [order]);
+
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("eb_applied_coupon")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (appliedCoupon) {
+        localStorage.setItem("eb_applied_coupon", JSON.stringify(appliedCoupon));
+      } else {
+        localStorage.removeItem("eb_applied_coupon");
+      }
+    } catch (e) {}
+  }, [appliedCoupon]);
+
   const [couponInput, setCouponInput] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -353,7 +431,13 @@ function App() {
   // Admin State
   const [adminToken, setAdminToken] = useState(() => localStorage.getItem("eb_admin_token") || "");
   const [admin, setAdmin] = useState(null);
-  const [adminTab, setAdminTab] = useState("dashboard");
+  const [adminTab, setAdminTab] = useState(() => localStorage.getItem("eb_admin_tab") || "dashboard");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("eb_admin_tab", adminTab);
+    } catch (e) {}
+  }, [adminTab]);
   const [adminLogin, setAdminLogin] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [newCoupon, setNewCoupon] = useState({ code: "", discountPercent: 10, flatDiscount: 0, minOrderValue: 0, usageLimit: 500, startDate: "", expiryDate: "" });
@@ -639,8 +723,14 @@ function App() {
                 razorpay_signature: response.razorpay_signature
               });
 
+              const orderCustomer = {
+                ...customer,
+                name: customer.name || googleUser?.name || "",
+                email: String(customer.email || googleUser?.email || "").trim().toLowerCase()
+              };
+
               const payload = {
-                customer,
+                customer: orderCustomer,
                 items: [{
                   productId: product._id,
                   name: product.name,
@@ -665,17 +755,17 @@ function App() {
               setCouponInput("");
 
               if (createdOrder) {
-                setUserOrders(prev => [createdOrder, ...prev.filter(o => o.orderId !== createdOrder.orderId)]);
+                setUserOrders(prev => [createdOrder, ...prev.filter(o => String(o.orderId) !== String(createdOrder.orderId))]);
                 try {
                   const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
-                  const updated = [createdOrder, ...cached.filter(o => o.orderId !== createdOrder.orderId)];
+                  const updated = [createdOrder, ...cached.filter(o => String(o.orderId) !== String(createdOrder.orderId))];
                   localStorage.setItem("eb_user_orders", JSON.stringify(updated));
                 } catch (err) {
                   console.warn("Could not save order to local cache:", err.message);
                 }
               }
 
-              if (customer.email) fetchUserOrders(customer.email);
+              if (orderCustomer.email) fetchUserOrders(orderCustomer.email);
               go("confirmation");
             } catch {
               setToast("Payment verification failed. Please contact support.");
@@ -708,8 +798,14 @@ function App() {
         } else {
           setToast("Simulating Razorpay Payment...");
           setTimeout(async () => {
+            const orderCustomer = {
+              ...customer,
+              name: customer.name || googleUser?.name || "",
+              email: String(customer.email || googleUser?.email || "").trim().toLowerCase()
+            };
+
             const payload = {
-              customer,
+              customer: orderCustomer,
               items: [{
                 productId: product._id,
                 name: product.name,
@@ -733,17 +829,17 @@ function App() {
             setCouponInput("");
 
             if (createdOrder) {
-              setUserOrders(prev => [createdOrder, ...prev.filter(o => o.orderId !== createdOrder.orderId)]);
+              setUserOrders(prev => [createdOrder, ...prev.filter(o => String(o.orderId) !== String(createdOrder.orderId))]);
               try {
                 const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
-                const updated = [createdOrder, ...cached.filter(o => o.orderId !== createdOrder.orderId)];
+                const updated = [createdOrder, ...cached.filter(o => String(o.orderId) !== String(createdOrder.orderId))];
                 localStorage.setItem("eb_user_orders", JSON.stringify(updated));
               } catch (err) {
                 console.warn("Could not save order to local cache:", err.message);
               }
             }
 
-            if (customer.email) fetchUserOrders(customer.email);
+            if (orderCustomer.email) fetchUserOrders(orderCustomer.email);
             go("confirmation");
             setLoading(false);
           }, 1200);
@@ -838,6 +934,23 @@ function App() {
         }
       } else {
         setToast(`Order status updated to ${status}`);
+      }
+      if (res.data?.order) {
+        const updatedOrd = res.data.order;
+        setAdmin(prev => {
+          if (!prev) return prev;
+          const updatedOrders = (prev.orders || []).map(o => 
+            (String(o._id) === String(updatedOrd._id) || String(o.orderId) === String(updatedOrd.orderId)) ? { ...o, ...updatedOrd } : o
+          );
+          const updatedRecent = (prev.recentOrders || []).map(o => 
+            (String(o._id) === String(updatedOrd._id) || String(o.orderId) === String(updatedOrd.orderId)) ? { ...o, ...updatedOrd } : o
+          );
+          return {
+            ...prev,
+            orders: updatedOrders,
+            recentOrders: updatedRecent
+          };
+        });
       }
       await loadAdmin();
       if (adminTab === "orders") await loadOrders();
@@ -2213,7 +2326,12 @@ function App() {
               <div><span>Status</span><strong>{order.status}</strong></div>
               <div><span>Customer</span><strong>{order.customer?.name} ({order.customer?.phone})</strong></div>
             </div>
-            <button className="button button-primary" onClick={() => go("home")}>Back to Home</button>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "20px" }}>
+              <button className="button button-primary" onClick={() => { setGoogleModalOpen(true); setProfileTab("orders"); if (googleUser?.email || customer?.email) fetchUserOrders(googleUser?.email || customer?.email); }}>
+                View My Orders
+              </button>
+              <button className="button button-light" onClick={() => go("home")}>Back to Home</button>
+            </div>
           </div>
         </main>
       )}
@@ -2678,35 +2796,47 @@ function App() {
         <main className="admin-shell">
           <aside className="admin-sidebar">
             <div className="admin-brand">
+              <span className="admin-brand-icon">EB</span>
               <strong>Eka Bhūmih CMS</strong>
             </div>
             <div className="admin-nav">
               <button className={adminTab === "dashboard" ? "active" : ""} onClick={() => handleAdminTabSelect("dashboard")}>
-                Dashboard
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
               </button>
               <button className={adminTab === "orders" ? "active" : ""} onClick={() => handleAdminTabSelect("orders")}>
-                Orders
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>Orders</span>
               </button>
               <button className={adminTab === "product" ? "active" : ""} onClick={() => handleAdminTabSelect("product")}>
-                Product Management
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span>Product Management</span>
               </button>
               <button className={adminTab === "coupons" ? "active" : ""} onClick={() => handleAdminTabSelect("coupons")}>
-                Coupons
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                <span>Coupons</span>
               </button>
               <button className={adminTab === "offers" ? "active" : ""} onClick={() => handleAdminTabSelect("offers")}>
-                Promotional Offers
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Promotional Offers</span>
               </button>
               <button className={adminTab === "subscribers" ? "active" : ""} onClick={() => handleAdminTabSelect("subscribers")}>
-                Subscribers
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Subscribers</span>
               </button>
               <button className={adminTab === "campaigns" ? "active" : ""} onClick={() => handleAdminTabSelect("campaigns")}>
-                Email Campaigns
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span>Email Campaigns</span>
               </button>
               <button className={adminTab === "email" ? "active" : ""} onClick={() => handleAdminTabSelect("email")}>
-                Email Settings
+                <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Email Settings</span>
               </button>
             </div>
-            <button className="admin-logout" onClick={logoutAdmin}>Logout</button>
+            <button className="admin-logout" onClick={logoutAdmin}>
+              <svg className="admin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Logout</span>
+            </button>
           </aside>
 
           <section className="admin-content">

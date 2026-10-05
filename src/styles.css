@@ -1411,16 +1411,17 @@ img {
   padding: 4px 8px 24px;
 }
 
-.admin-brand span {
+.admin-brand span, .admin-brand-icon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
   background: var(--cream);
   color: #1C221C;
-  display: grid;
+  display: inline-grid;
   place-items: center;
   font-weight: 800;
   font-size: 11px;
+  flex-shrink: 0;
 }
 
 .admin-brand strong {
@@ -1445,6 +1446,17 @@ img {
   gap: 10px;
   font-size: 13px;
   transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease, stroke 0.2s ease;
+}
+
+.admin-nav button:hover .admin-icon,
+.admin-nav button.active .admin-icon {
+  transform: scale(1.1);
 }
 
 .admin-nav button.active, .admin-nav button:hover, .admin-logout:hover {
@@ -4903,6 +4915,9 @@ img {
 /* ==========================================================================
    ADMIN DASHBOARD MOBILE RESPONSIVENESS & TOUCH ADAPTATIONS
    ========================================================================== */
+/* ==========================================================================
+   ADMIN DASHBOARD MOBILE RESPONSIVENESS & TOUCH ADAPTATIONS
+   ========================================================================== */
 @media (max-width: 980px) {
   .admin-shell {
     display: flex !important;
@@ -4911,16 +4926,32 @@ img {
   }
 
   .admin-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
     width: 100% !important;
-    padding: 16px 20px !important;
+    padding: 12px 16px 8px !important;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--cream-border);
+    background: #1C221C !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 
   .admin-brand {
-    padding: 0 0 12px 0 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    margin-bottom: 12px;
+    padding: 0 0 8px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 4px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .admin-brand strong {
+    font-size: 15px !important;
   }
 
   .admin-nav {
@@ -4929,26 +4960,47 @@ img {
     overflow-x: auto !important;
     white-space: nowrap !important;
     gap: 8px !important;
-    padding-bottom: 6px !important;
+    padding: 4px 0 8px !important;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+  }
+
+  .admin-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-nav button {
     flex: 0 0 auto !important;
     white-space: nowrap !important;
-    padding: 10px 16px !important;
-    font-size: 13px !important;
-    border-radius: 10px !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #C4CCC4 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .admin-nav button.active {
+    background: var(--green) !important;
+    color: var(--white) !important;
+    box-shadow: 0 2px 8px rgba(47, 107, 56, 0.4);
   }
 
   .admin-logout {
-    margin-top: 10px !important;
-    width: 100% !important;
-    justify-content: center !important;
-    text-align: center !important;
-    background: rgba(211, 47, 47, 0.15) !important;
-    color: #FF6B6B !important;
+    margin: 0 !important;
+    padding: 7px 14px !important;
+    font-size: 12px !important;
+    border-radius: 20px !important;
+    background: rgba(211, 47, 47, 0.2) !important;
+    color: #FF8B8B !important;
+    flex-shrink: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: auto !important;
   }
 
   .admin-content {
@@ -4972,7 +5024,7 @@ img {
 
 @media (max-width: 768px) {
   .admin-top h1 {
-    font-size: 26px !important;
+    font-size: 24px !important;
   }
 
   .order-detail-card, .order-row {
@@ -5028,7 +5080,7 @@ img {
   .panel-head button {
     width: 100% !important;
     text-align: center !important;
-    padding: 8px 12px !important;
+    padding: 10px 12px !important;
     background: var(--cream) !important;
     border-radius: 8px !important;
   }
@@ -5062,9 +5114,23 @@ img {
   .user-my-orders-view {
     max-height: 380px !important;
   }
+
+  .subscribers-list, .campaigns-list, .delivery-logs-table {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (max-width: 480px) {
+  .admin-sidebar {
+    padding: 10px 12px 6px !important;
+  }
+
+  .admin-nav button {
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+  }
+
   .admin-stats {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
@@ -5072,19 +5138,24 @@ img {
 
   .admin-stats > div {
     padding: 12px !important;
-    border-radius: 14px !important;
+    border-radius: 12px !important;
   }
 
   .admin-stats span {
-    font-size: 8px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.5px !important;
   }
 
   .admin-stats strong {
-    font-size: 20px !important;
+    font-size: 18px !important;
     margin-top: 4px !important;
   }
 
   .create-coupon-form {
     padding: 14px !important;
+  }
+
+  .admin-top h1 {
+    font-size: 20px !important;
   }
 }
