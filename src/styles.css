@@ -3325,6 +3325,19 @@ img {
   width: max-content;
 }
 
+.badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  color: var(--white);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  background: none;
+}
+
 .pd-badge--soft {
   background: rgba(255, 255, 255, 0.9);
   color: var(--ink);
