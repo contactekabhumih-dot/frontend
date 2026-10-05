@@ -919,13 +919,43 @@ function App() {
   };
 
   const updateOrderStatus = async (id, status, sendEmail) => {
-    setLoading(true);
+    let previousAdmin = admin;
+
+    // Instant optimistic state update for admin lists
+    setAdmin(prev => {
+      if (!prev) return prev;
+      const match = o => (
+        String(o._id) === String(id) || 
+        String(o.orderId) === String(id) || 
+        String(o.id) === String(id) ||
+        String(o.orderId) === `#${String(id).replace(/^#/, "")}`
+      );
+      return {
+        ...prev,
+        orders: (prev.orders || []).map(o => match(o) ? { ...o, status } : o),
+        recentOrders: (prev.recentOrders || []).map(o => match(o) ? { ...o, status } : o)
+      };
+    });
+
+    // Instant optimistic state update for customer orders list & cache
+    setUserOrders(prev => prev.map(o => (
+      String(o._id) === String(id) || String(o.orderId) === String(id) || String(o.orderId) === `#${String(id).replace(/^#/, "")}`
+    ) ? { ...o, status } : o));
+
+    try {
+      const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+      const updated = cached.map(o => (
+        String(o._id) === String(id) || String(o.orderId) === String(id) || String(o.orderId) === `#${String(id).replace(/^#/, "")}`
+      ) ? { ...o, status } : o);
+      localStorage.setItem("eb_user_orders", JSON.stringify(updated));
+    } catch (e) {}
+
     try {
       const res = await axios.patch(`${API}/admin/orders/${id}/status`, { status, sendEmail }, getAdminHeaders());
       const emailRes = res.data.emailResult;
       if (emailRes) {
         if (emailRes.emailSent) {
-          setToast(`Order updated to ${status}. Email accepted by provider!`);
+          setToast(`Order updated to ${status}. Notification email sent to customer!`);
         } else if (emailRes.status === "Not_Configured") {
           setToast(`Order updated to ${status}. Email notice: ${emailRes.message}`);
         } else if (emailRes.status === "No_Email") {
@@ -936,29 +966,27 @@ function App() {
       } else {
         setToast(`Order status updated to ${status}`);
       }
+
       if (res.data?.order) {
         const updatedOrd = res.data.order;
         setAdmin(prev => {
           if (!prev) return prev;
-          const updatedOrders = (prev.orders || []).map(o => 
-            (String(o._id) === String(updatedOrd._id) || String(o.orderId) === String(updatedOrd.orderId)) ? { ...o, ...updatedOrd } : o
-          );
-          const updatedRecent = (prev.recentOrders || []).map(o => 
-            (String(o._id) === String(updatedOrd._id) || String(o.orderId) === String(updatedOrd.orderId)) ? { ...o, ...updatedOrd } : o
+          const match = o => (
+            String(o._id) === String(updatedOrd._id) || 
+            String(o.orderId) === String(updatedOrd.orderId) ||
+            String(o.id) === String(updatedOrd._id) ||
+            String(o.id) === String(updatedOrd.orderId)
           );
           return {
             ...prev,
-            orders: updatedOrders,
-            recentOrders: updatedRecent
+            orders: (prev.orders || []).map(o => match(o) ? { ...o, ...updatedOrd } : o),
+            recentOrders: (prev.recentOrders || []).map(o => match(o) ? { ...o, ...updatedOrd } : o)
           };
         });
       }
-      await loadAdmin();
-      if (adminTab === "orders") await loadOrders();
     } catch (err) {
+      if (previousAdmin) setAdmin(previousAdmin);
       if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not update order status");
-    } finally {
-      setLoading(false);
     }
   };
 
