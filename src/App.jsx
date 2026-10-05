@@ -277,19 +277,47 @@ function App() {
   });
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
   const [profileTab, setProfileTab] = useState("orders"); // "orders" | "profile"
-  const [userOrders, setUserOrders] = useState([]);
+  const [userOrders, setUserOrders] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("eb_user_orders")) || [];
+    } catch {
+      return [];
+    }
+  });
   const [loadingUserOrders, setLoadingUserOrders] = useState(false);
 
   const fetchUserOrders = async (email) => {
     if (!email) return;
-    setLoadingUserOrders(true);
+    const cleanEmail = String(email).trim().toLowerCase();
+    
+    // Load local cache immediately so data is never lost on re-render
     try {
-      const res = await axios.get(`${API}/orders/my-orders?email=${encodeURIComponent(email)}`);
-      if (Array.isArray(res.data)) {
-        setUserOrders(res.data);
+      const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+      const userCached = cached.filter(o => String(o.customer?.email || "").trim().toLowerCase() === cleanEmail);
+      if (userCached.length > 0) {
+        setUserOrders(userCached);
       }
     } catch (err) {
-      console.warn("Could not fetch user orders:", err.message);
+      console.warn("Local orders cache parse error:", err.message);
+    }
+
+    setLoadingUserOrders(true);
+    try {
+      const res = await axios.get(`${API}/orders/my-orders?email=${encodeURIComponent(cleanEmail)}`);
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setUserOrders(res.data);
+        // Merge with local cache
+        const currentCached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+        const merged = [...res.data];
+        currentCached.forEach(c => {
+          if (!merged.some(m => String(m.orderId) === String(c.orderId) || String(m._id) === String(c._id))) {
+            merged.push(c);
+          }
+        });
+        localStorage.setItem("eb_user_orders", JSON.stringify(merged));
+      }
+    } catch (err) {
+      console.warn("Could not fetch user orders from backend:", err.message);
     } finally {
       setLoadingUserOrders(false);
     }
@@ -630,10 +658,24 @@ function App() {
               };
 
               const createOrderRes = await axios.post(`${API}/orders`, payload);
-              setOrder(createOrderRes.data.order);
+              const createdOrder = createOrderRes.data.order;
+              setOrder(createdOrder);
               setCartQty(1);
               setAppliedCoupon(null);
               setCouponInput("");
+
+              if (createdOrder) {
+                setUserOrders(prev => [createdOrder, ...prev.filter(o => o.orderId !== createdOrder.orderId)]);
+                try {
+                  const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+                  const updated = [createdOrder, ...cached.filter(o => o.orderId !== createdOrder.orderId)];
+                  localStorage.setItem("eb_user_orders", JSON.stringify(updated));
+                } catch (err) {
+                  console.warn("Could not save order to local cache:", err.message);
+                }
+              }
+
+              if (customer.email) fetchUserOrders(customer.email);
               go("confirmation");
             } catch {
               setToast("Payment verification failed. Please contact support.");
@@ -684,10 +726,24 @@ function App() {
               razorpaySignature: "simulated_sig"
             };
             const createOrderRes = await axios.post(`${API}/orders`, payload);
-            setOrder(createOrderRes.data.order);
+            const createdOrder = createOrderRes.data.order;
+            setOrder(createdOrder);
             setCartQty(1);
             setAppliedCoupon(null);
             setCouponInput("");
+
+            if (createdOrder) {
+              setUserOrders(prev => [createdOrder, ...prev.filter(o => o.orderId !== createdOrder.orderId)]);
+              try {
+                const cached = JSON.parse(localStorage.getItem("eb_user_orders") || "[]");
+                const updated = [createdOrder, ...cached.filter(o => o.orderId !== createdOrder.orderId)];
+                localStorage.setItem("eb_user_orders", JSON.stringify(updated));
+              } catch (err) {
+                console.warn("Could not save order to local cache:", err.message);
+              }
+            }
+
+            if (customer.email) fetchUserOrders(customer.email);
             go("confirmation");
             setLoading(false);
           }, 1200);
@@ -2717,11 +2773,12 @@ function App() {
 
                 <div className="orders-list">
                   {(admin?.orders || []).map(item => {
+                    const targetId = item._id || item.id || item.orderId;
                     const hasEmail = Boolean(item.customer?.email);
-                    const sendEmailChecked = sendEmailCheckedMap[item._id] !== false;
+                    const sendEmailChecked = sendEmailCheckedMap[targetId] !== false;
 
                     return (
-                      <div className="order-detail-card" key={item._id}>
+                      <div className="order-detail-card" key={targetId}>
                         <div className="order-info-block">
                           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                             <strong>{item.orderId}</strong>
@@ -2747,7 +2804,7 @@ function App() {
                             <label style={{ fontSize: "12px", fontWeight: "600" }}>New Status:</label>
                             <select
                               value={item.status}
-                              onChange={e => updateOrderStatus(item._id, e.target.value, hasEmail && sendEmailChecked)}
+                              onChange={e => updateOrderStatus(targetId, e.target.value, hasEmail && sendEmailChecked)}
                             >
                               {["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"].map(status => (
                                 <option key={status}>{status}</option>
@@ -2760,7 +2817,7 @@ function App() {
                                   <input
                                     type="checkbox"
                                     checked={sendEmailChecked}
-                                    onChange={e => setSendEmailCheckedMap(prev => ({ ...prev, [item._id]: e.target.checked }))}
+                                    onChange={e => setSendEmailCheckedMap(prev => ({ ...prev, [targetId]: e.target.checked }))}
                                   />
                                   <span>Send email notification to customer</span>
                                 </label>
@@ -2775,7 +2832,7 @@ function App() {
                           <button
                             className="button button-light notify-btn"
                             disabled={!hasEmail || loading}
-                            onClick={() => resendOrderEmail(item._id)}
+                            onClick={() => resendOrderEmail(targetId)}
                             title={!hasEmail ? "Customer email unavailable" : "Resend notification email"}
                           >
                             Resend Email Notification
