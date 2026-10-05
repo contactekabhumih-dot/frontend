@@ -432,6 +432,7 @@ function App() {
   const [adminToken, setAdminToken] = useState(() => localStorage.getItem("eb_admin_token") || "");
   const [admin, setAdmin] = useState(null);
   const [adminTab, setAdminTab] = useState(() => localStorage.getItem("eb_admin_tab") || "dashboard");
+  const [adminMobileMenuOpen, setAdminMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -1296,6 +1297,7 @@ function App() {
   };
 
   const handleAdminTabSelect = async (tab) => {
+    setAdminMobileMenuOpen(false);
     if (adminTab === "product" && cmsDirty) {
       setPendingTabSwitch(() => async () => {
         setAdminTab(tab);
@@ -1324,6 +1326,7 @@ function App() {
   };
 
   const logoutAdmin = () => {
+    setAdminMobileMenuOpen(false);
     localStorage.removeItem("eb_admin_token");
     setAdminToken("");
     setAdmin(null);
@@ -2794,10 +2797,27 @@ function App() {
       {/* FULL ADMIN PANEL */}
       {view === "admin" && (
         <main className="admin-shell">
-          <aside className="admin-sidebar">
+          {adminMobileMenuOpen && (
+            <div className="admin-menu-overlay" onClick={() => setAdminMobileMenuOpen(false)} />
+          )}
+          <aside className={`admin-sidebar ${adminMobileMenuOpen ? "mobile-open" : ""}`}>
             <div className="admin-brand">
-              <span className="admin-brand-icon">EB</span>
-              <strong>Eka Bhūmih CMS</strong>
+              <div className="admin-brand-title">
+                <span className="admin-brand-icon">EB</span>
+                <strong>Eka Bhūmih CMS</strong>
+              </div>
+              <button
+                type="button"
+                className="admin-hamburger-btn"
+                onClick={() => setAdminMobileMenuOpen(!adminMobileMenuOpen)}
+                aria-label="Toggle Navigation"
+              >
+                {adminMobileMenuOpen ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                )}
+              </button>
             </div>
             <div className="admin-nav">
               <button className={adminTab === "dashboard" ? "active" : ""} onClick={() => handleAdminTabSelect("dashboard")}>
