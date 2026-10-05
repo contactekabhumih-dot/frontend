@@ -919,6 +919,7 @@ function App() {
   };
 
   const updateOrderStatus = async (id, status, sendEmail) => {
+    console.log("[ADMIN UI] updateOrderStatus triggered for ID:", id, "New Status:", status, "Send Email:", sendEmail);
     let previousAdmin = admin;
 
     // Instant optimistic state update for admin lists
@@ -951,8 +952,13 @@ function App() {
     } catch (e) {}
 
     try {
-      const res = await axios.patch(`${API}/admin/orders/${id}/status`, { status, sendEmail }, getAdminHeaders());
+      const cleanId = String(id || "").replace(/^#/, "");
+      console.log("[ADMIN UI] Calling PATCH status endpoint:", `${API}/admin/orders/${encodeURIComponent(cleanId)}/status`);
+      const res = await axios.patch(`${API}/admin/orders/${encodeURIComponent(cleanId)}/status`, { status, sendEmail }, getAdminHeaders());
+      console.log("[ADMIN UI] PATCH status response data:", res.data);
       const emailRes = res.data.emailResult;
+      console.log("[ADMIN UI] PATCH status emailResult:", emailRes);
+
       if (emailRes) {
         if (emailRes.emailSent) {
           setToast(`Order updated to ${status}. Notification email sent to customer!`);
@@ -985,28 +991,38 @@ function App() {
         });
       }
     } catch (err) {
+      console.error("[ADMIN UI] updateOrderStatus error:", err.response?.data || err.message);
       if (previousAdmin) setAdmin(previousAdmin);
       if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not update order status");
     }
   };
 
   const resendOrderEmail = async (orderId) => {
+    console.log("[ADMIN UI] resendOrderEmail button clicked for raw orderId:", orderId);
     const cleanId = String(orderId || "").trim().replace(/^#/, "");
-    if (!cleanId) return;
+    if (!cleanId) {
+      console.warn("[ADMIN UI] Clean orderId is empty, aborting.");
+      return;
+    }
 
+    console.log("[ADMIN UI] Calling POST resend-email endpoint:", `${API}/admin/orders/${encodeURIComponent(cleanId)}/resend-email`);
     setLoading(true);
     try {
       const res = await axios.post(`${API}/admin/orders/${encodeURIComponent(cleanId)}/resend-email`, {}, getAdminHeaders());
+      console.log("[ADMIN UI] resendOrderEmail response data:", res.data);
       const emailRes = res.data.emailResult;
+      console.log("[ADMIN UI] resendOrderEmail emailResult:", emailRes);
+
       if (emailRes?.emailSent) {
         setToast("Resent order notification email accepted by provider!");
       } else if (emailRes?.status === "Not_Configured") {
-        setToast(`Email notice: ${emailRes?.message || "Email service is not configured"}`);
+        setToast(`Email notice: ${emailRes?.message || "Email service is not configured on server"}`);
       } else {
         setToast(`Email resend notice: ${emailRes?.message || emailRes?.error || res.data?.message || "Could not resend email"}`);
       }
       await loadOrders();
     } catch (err) {
+      console.error("[ADMIN UI] resendOrderEmail error:", err.response?.data || err.message);
       if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not resend email notification");
     } finally {
       setLoading(false);
