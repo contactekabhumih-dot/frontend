@@ -1420,6 +1420,26 @@ function App() {
     if (tab === "product") initCmsEditor();
   };
 
+  // Auto-load customer orders whenever the Orders tab is visible, then keep them fresh.
+  useEffect(() => {
+    if (view !== "admin" || adminTab !== "orders") return;
+    const token = adminToken || localStorage.getItem("eb_admin_token");
+    if (!token) return;
+
+    const silentRefresh = async () => {
+      try {
+        const res = await axios.get(`${API}/admin/orders`, { headers: { Authorization: `Bearer ${token}` } });
+        setAdmin(prev => ({ ...(prev || {}), orders: res.data }));
+      } catch (err) {
+        if (err.response?.status === 401) handleAdminError(err);
+      }
+    };
+
+    loadOrders();
+    const timer = setInterval(silentRefresh, 30000);
+    return () => clearInterval(timer);
+  }, [view, adminTab, adminToken]);
+
   const logoutAdmin = () => {
     setAdminMobileMenuOpen(false);
     localStorage.removeItem("eb_admin_token");
