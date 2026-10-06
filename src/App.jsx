@@ -327,7 +327,6 @@ function App() {
         setUserOrders(filtered);
       }
     } catch (err) {
-      console.warn("Local orders cache parse error:", err.message);
     }
 
     if (!targetEmail) return;
@@ -354,11 +353,9 @@ function App() {
           const updatedCache = [...combined, ...otherUsersCached];
           localStorage.setItem("eb_user_orders", JSON.stringify(updatedCache));
         } catch (e) {
-          console.warn("Error updating user orders cache:", e.message);
         }
       }
     } catch (err) {
-      console.warn("Could not fetch user orders from backend:", err.message);
     } finally {
       setLoadingUserOrders(false);
     }
@@ -500,7 +497,6 @@ function App() {
         setCmsProduct(JSON.parse(JSON.stringify(res.data)));
       }
     } catch (err) {
-      console.warn("Could not fetch product from backend API:", err.message);
     }
   };
 
@@ -664,7 +660,6 @@ function App() {
             logo_alignment: "left"
           });
         } catch (err) {
-          console.warn("[GSI] Button render notice:", err.message);
         }
       }
     });
@@ -677,19 +672,8 @@ function App() {
   const triggerGooglePrompt = () => {
     if (window.google?.accounts?.id) {
       try {
-        window.google.accounts.id.prompt(notification => {
-          if (notification.isNotDisplayed()) {
-            console.log("[GSI] Prompt not displayed:", notification.getNotDisplayedReason());
-          }
-          if (notification.isSkippedMoment()) {
-            console.log("[GSI] Prompt skipped:", notification.getSkippedReason());
-          }
-          if (notification.isDismissedMoment()) {
-            console.log("[GSI] Prompt dismissed:", notification.getDismissedReason());
-          }
-        });
+        window.google.accounts.id.prompt(() => {});
       } catch (e) {
-        console.warn("[GSI] Prompt notice:", e.message);
       }
     } else {
       setToast("Google Sign In loading... Please try again in a moment.");
@@ -808,7 +792,6 @@ function App() {
                   const updated = [createdOrder, ...cached.filter(o => String(o.orderId) !== String(createdOrder.orderId))];
                   localStorage.setItem("eb_user_orders", JSON.stringify(updated));
                 } catch (err) {
-                  console.warn("Could not save order to local cache:", err.message);
                 }
               }
 
@@ -882,7 +865,6 @@ function App() {
                 const updated = [createdOrder, ...cached.filter(o => String(o.orderId) !== String(createdOrder.orderId))];
                 localStorage.setItem("eb_user_orders", JSON.stringify(updated));
               } catch (err) {
-                console.warn("Could not save order to local cache:", err.message);
               }
             }
 
@@ -965,7 +947,6 @@ function App() {
   };
 
   const updateOrderStatus = async (id, status, sendEmail) => {
-    console.log("[ADMIN UI] updateOrderStatus triggered for ID:", id, "New Status:", status, "Send Email:", sendEmail);
     let previousAdmin = admin;
 
     // Instant optimistic state update for admin lists
@@ -999,11 +980,8 @@ function App() {
 
     try {
       const cleanId = String(id || "").replace(/^#/, "");
-      console.log("[ADMIN UI] Calling PATCH status endpoint:", `${API}/admin/orders/${encodeURIComponent(cleanId)}/status`);
       const res = await axios.patch(`${API}/admin/orders/${encodeURIComponent(cleanId)}/status`, { status, sendEmail }, getAdminHeaders());
-      console.log("[ADMIN UI] PATCH status response data:", res.data);
       const emailRes = res.data.emailResult;
-      console.log("[ADMIN UI] PATCH status emailResult:", emailRes);
 
       if (emailRes) {
         if (emailRes.emailSent) {
@@ -1037,27 +1015,21 @@ function App() {
         });
       }
     } catch (err) {
-      console.error("[ADMIN UI] updateOrderStatus error:", err.response?.data || err.message);
       if (previousAdmin) setAdmin(previousAdmin);
       if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not update order status");
     }
   };
 
   const resendOrderEmail = async (orderId) => {
-    console.log("[ADMIN UI] resendOrderEmail button clicked for raw orderId:", orderId);
     const cleanId = String(orderId || "").trim().replace(/^#/, "");
     if (!cleanId) {
-      console.warn("[ADMIN UI] Clean orderId is empty, aborting.");
       return;
     }
 
-    console.log("[ADMIN UI] Calling POST resend-email endpoint:", `${API}/admin/orders/${encodeURIComponent(cleanId)}/resend-email`);
     setLoading(true);
     try {
       const res = await axios.post(`${API}/admin/orders/${encodeURIComponent(cleanId)}/resend-email`, {}, getAdminHeaders());
-      console.log("[ADMIN UI] resendOrderEmail response data:", res.data);
       const emailRes = res.data.emailResult;
-      console.log("[ADMIN UI] resendOrderEmail emailResult:", emailRes);
 
       if (emailRes?.emailSent) {
         setToast("Resent order notification email accepted by provider!");
@@ -1068,7 +1040,6 @@ function App() {
       }
       await loadOrders();
     } catch (err) {
-      console.error("[ADMIN UI] resendOrderEmail error:", err.response?.data || err.message);
       if (!handleAdminError(err)) setToast(err.response?.data?.error || "Could not resend email notification");
     } finally {
       setLoading(false);
@@ -1354,21 +1325,8 @@ function App() {
       const res = await axios.put(`${API}/admin/product`, cmsProduct, getAdminHeaders());
       const saved = res.data;
 
-      console.log("[PRODUCT SAVE]", {
-        productId: saved._id,
-        originalPrice: saved.originalPrice,
-        sellingPrice: saved.price || saved.sellingPrice,
-        apiStatus: "SUCCESS"
-      });
-
       const verifyRes = await axios.get(`${API}/product`);
       const verified = verifyRes.data;
-
-      console.log("[PRODUCT VERIFY]", {
-        fetchedOriginalPrice: verified.originalPrice,
-        fetchedSellingPrice: verified.price || verified.sellingPrice,
-        persistence: (verified.price === saved.price && verified.originalPrice === saved.originalPrice) ? "PASS" : "FAIL"
-      });
 
       setProduct(verified);
       setCmsProduct(JSON.parse(JSON.stringify(verified)));
