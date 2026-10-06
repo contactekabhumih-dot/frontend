@@ -2761,7 +2761,7 @@ function App() {
                 required
                 value={adminLogin.email}
                 onChange={e => setAdminLogin({ ...adminLogin, email: e.target.value })}
-                placeholder="contact.ekabhumih@gmail.com"
+                placeholder="abc@gmail.com"
               />
             </label>
             <label>Password
