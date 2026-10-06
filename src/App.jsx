@@ -625,9 +625,12 @@ function App() {
       if (googleInitRef.current || !window.google?.accounts?.id) return;
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: handleCredentialResponse
+        callback: handleCredentialResponse,
+        use_fedcm_for_prompt: false,
+        auto_select: false
       });
       googleInitRef.current = true;
+      setTimeout(renderGoogleButtons, 300);
     };
 
     if (window.google?.accounts?.id) {
@@ -643,9 +646,50 @@ function App() {
     document.body.appendChild(script);
   }, []);
 
+  const renderGoogleButtons = () => {
+    if (!window.google?.accounts?.id) return;
+    const targets = ["google-btn-render-modal", "google-btn-render-checkout"];
+    targets.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.innerHTML = "";
+        try {
+          window.google.accounts.id.renderButton(el, {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "continue_with",
+            shape: "rectangular",
+            width: 260
+          });
+        } catch (err) {
+          console.warn("[GSI] Button render notice:", err.message);
+        }
+      }
+    });
+  };
+
+  useEffect(() => {
+    renderGoogleButtons();
+  }, [googleModalOpen, view, googleUser]);
+
   const triggerGooglePrompt = () => {
     if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
+      try {
+        window.google.accounts.id.prompt(notification => {
+          if (notification.isNotDisplayed()) {
+            console.log("[GSI] Prompt not displayed:", notification.getNotDisplayedReason());
+          }
+          if (notification.isSkippedMoment()) {
+            console.log("[GSI] Prompt skipped:", notification.getSkippedReason());
+          }
+          if (notification.isDismissedMoment()) {
+            console.log("[GSI] Prompt dismissed:", notification.getDismissedReason());
+          }
+        });
+      } catch (e) {
+        console.warn("[GSI] Prompt notice:", e.message);
+      }
     } else {
       setToast("Google Sign In loading... Please try again in a moment.");
     }
@@ -1517,7 +1561,8 @@ function App() {
                   <h2>Sign In with Google</h2>
                   <p>Fast, secure 1-click Google Account sign in to track orders and complete purchase.</p>
                 </div>
-                <div className="google-btn-container">
+                <div className="google-btn-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                  <div id="google-btn-render-modal" style={{ display: "flex", justifyContent: "center", minHeight: "44px" }}></div>
                   <button className="button button-primary full google-continue-btn" onClick={triggerGooglePrompt} disabled={loading}>
                     Continue with Google
                   </button>
@@ -2296,6 +2341,7 @@ function App() {
                     <p>Sign in with your Google account for 1-click checkout, order tracking, and delivery notifications.</p>
                   </div>
                 </div>
+                <div id="google-btn-render-checkout" style={{ display: "flex", justifyContent: "center", margin: "12px 0" }}></div>
                 <button type="button" className="button button-primary checkout-google-btn" onClick={triggerGooglePrompt}>
                   Continue with Google
                 </button>
