@@ -6,6 +6,7 @@ import {
   Search,
   User,
   ShoppingBag,
+  Package,
   Mail,
   MapPin,
   Phone,
@@ -1578,7 +1579,22 @@ function App() {
               </button>
             )}
 
-            <button className="icon-button cart-button" onClick={() => go("cart")} aria-label="Cart">
+            <button
+              className="icon-button orders-button"
+              onClick={() => {
+                setGoogleModalOpen(true);
+                setProfileTab("orders");
+                const targetEm = googleUser?.email || customer?.email;
+                if (targetEm) fetchUserOrders(targetEm);
+              }}
+              aria-label="My Orders"
+              title="My Orders"
+            >
+              <Package size={21} />
+              {userOrders.length > 0 && <span className="orders-badge">{userOrders.length}</span>}
+            </button>
+
+            <button className="icon-button cart-button" onClick={() => go("cart")} aria-label="Cart" title="Shopping Cart">
               <ShoppingBag size={21} />
               <span className="cart-badge">{cartQty}</span>
             </button>
