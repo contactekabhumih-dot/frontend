@@ -5225,3 +5225,30 @@ img {
     font-size: 20px !important;
   }
 }
+
+/* GOOGLE SIGN IN BUTTON CONTAINER STYLING */
+#google-btn-render-modal,
+#google-btn-render-checkout {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 8px 0 !important;
+}
+
+#google-btn-render-modal iframe,
+#google-btn-render-checkout iframe,
+#google-btn-render-modal > div,
+#google-btn-render-checkout > div {
+  margin: 0 auto !important;
+  box-shadow: 0 4px 14px rgba(47, 107, 56, 0.12) !important;
+  border-radius: 99px !important;
+  overflow: hidden !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#google-btn-render-modal > div:hover,
+#google-btn-render-checkout > div:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(47, 107, 56, 0.18) !important;
+}

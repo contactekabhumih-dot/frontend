@@ -659,8 +659,9 @@ function App() {
             theme: "outline",
             size: "large",
             text: "continue_with",
-            shape: "rectangular",
-            width: 260
+            shape: "pill",
+            width: 290,
+            logo_alignment: "left"
           });
         } catch (err) {
           console.warn("[GSI] Button render notice:", err.message);
@@ -1561,11 +1562,8 @@ function App() {
                   <h2>Sign In with Google</h2>
                   <p>Fast, secure 1-click Google Account sign in to track orders and complete purchase.</p>
                 </div>
-                <div className="google-btn-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                  <div id="google-btn-render-modal" style={{ display: "flex", justifyContent: "center", minHeight: "44px" }}></div>
-                  <button className="button button-primary full google-continue-btn" onClick={triggerGooglePrompt} disabled={loading}>
-                    Continue with Google
-                  </button>
+                <div className="google-btn-container" style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
+                  <div id="google-btn-render-modal" style={{ display: "flex", justifyContent: "center", minHeight: "48px" }}></div>
                 </div>
               </>
             )}
@@ -2341,10 +2339,7 @@ function App() {
                     <p>Sign in with your Google account for 1-click checkout, order tracking, and delivery notifications.</p>
                   </div>
                 </div>
-                <div id="google-btn-render-checkout" style={{ display: "flex", justifyContent: "center", margin: "12px 0" }}></div>
-                <button type="button" className="button button-primary checkout-google-btn" onClick={triggerGooglePrompt}>
-                  Continue with Google
-                </button>
+                <div id="google-btn-render-checkout" style={{ display: "flex", justifyContent: "center", margin: "16px 0 8px" }}></div>
               </div>
             ) : (
               <div className="logged-in-checkout-banner">
